@@ -34,6 +34,7 @@ type config struct {
     ShowInitInfo       bool   // 显示初始化信息
     DevelopmentMode    bool   // 开发者模式
     ShowFileAndLinenum bool   // 显示文件路径和行号
+    TimeFormat         string // 时间显示格式
 }
 
 type Option func(conf *config)
@@ -51,6 +52,7 @@ func newConfig(opts ...Option) *config {
         ShowInitInfo:       true,
         DevelopmentMode:    true,
         ShowFileAndLinenum: false,
+        TimeFormat:         "2006-01-02 15:04:05.000Z0700",
     }
     for _, o := range opts {
         o(conf)
@@ -136,5 +138,12 @@ func WithDevelopmentMode(on bool) Option {
 func WithShowFileAndLinenum(show bool) Option {
     return func(conf *config) {
         conf.ShowFileAndLinenum = show
+    }
+}
+
+// 自定义时间显示格式
+func WithTimeFormat(format string) Option {
+    return func(conf *config) {
+        conf.TimeFormat = format
     }
 }
