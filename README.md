@@ -40,4 +40,5 @@ WithFileMaxDurableTime(day int) // 设置日志文件最多保存多长时间(�
 WithShowInitInfo(show bool) // 设置是否输出日志初始化完成信息, 默认 true
 WithDevelopmentMode(on bool) // 设置是否使用开发者模式, 在开发者模式下 DPanic 会打印一条消息后让程序感到恐慌
 WithShowFileAndLinenum(show bool) // 设置是否输出文件路径以及行号
+WithTimeFormat(format string) // 自定义时间显示格式
 ```
