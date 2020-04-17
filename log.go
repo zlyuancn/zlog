@@ -91,7 +91,7 @@ func makeWriteSyncer(conf *LogConfig) zapcore.WriteSyncer {
             MaxAge:     conf.FileMaxDurableTime,                   // 文件最多保存多少天
             Compress:   false,                                     // 是否压缩
         }
-        ws = append(ws, zapcore.AddSync(lumberjackHook))
+        ws = append(ws, zapcore.Lock(zapcore.AddSync(lumberjackHook)))
     }
     return zapcore.NewMultiWriteSyncer(ws...)
 }
