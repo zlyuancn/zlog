@@ -21,13 +21,13 @@ import (
 
 var DefaultLogger Loger = defaultLog
 
-func New(conf LogConfig) Loger {
+func New(conf LogConfig, opts ...zap.Option) Loger {
     var encoder = makeEncoder(&conf) // 编码器配置
     var ws = makeWriteSyncer(&conf)  // 输出合成器
     var level = makeLevel(&conf)     // 日志级别
 
     core := zapcore.NewCore(encoder, ws, level)
-    opts := makeOpts(&conf)
+    opts = makeOpts(&conf, opts...)
     log := newLogWrap(zap.New(core, opts...))
 
     if conf.ShowInitInfo {
@@ -101,10 +101,10 @@ func makeLevel(conf *LogConfig) zapcore.Level {
     return parserLogLevel(level)
 }
 
-func makeOpts(conf *LogConfig) []zap.Option {
+func makeOpts(conf *LogConfig, opts ...zap.Option) []zap.Option {
     const callerSkipOffset = 2
 
-    opts := []zap.Option{}
+    opts = append([]zap.Option{}, opts...)
     if conf.DevelopmentMode {
         opts = append(opts, zap.Development())
     }
