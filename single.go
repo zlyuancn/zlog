@@ -14,6 +14,7 @@ import (
 
 var defaultLog = func() *logWrap {
     conf := DefaultConfig
+    conf.ShowInitInfo = false
     return New(conf).(*logWrap)
 }()
 
