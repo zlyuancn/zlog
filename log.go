@@ -50,12 +50,15 @@ func makeEncoder(conf *LogConfig) zapcore.Encoder {
         EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
             enc.AppendString(t.Format(conf.TimeFormat))
         },
-        EncodeDuration: zapcore.SecondsDurationEncoder,
+        EncodeDuration: zapcore.NanosDurationEncoder,
         EncodeCaller:   zapcore.FullCallerEncoder, // 全路径编码器
         EncodeName:     zapcore.FullNameEncoder,
     }
     if conf.IsTerminal {
         cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder // 大写彩色level
+    }
+    if conf.MillisDuration {
+        cfg.EncodeDuration = zapcore.MillisDurationEncoder
     }
     if conf.JsonEncoder {
         return zapcore.NewJSONEncoder(cfg)
