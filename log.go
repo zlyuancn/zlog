@@ -45,8 +45,8 @@ func makeEncoder(conf *LogConfig) zapcore.Encoder {
         NameKey:       "logger",
         CallerKey:     "linenum",
         StacktraceKey: "stacktrace",
-        LineEnding:    zapcore.DefaultLineEnding,     // 末尾自动加上\n
-        EncodeLevel:   zapcore.LowercaseLevelEncoder, // 小写level
+        LineEnding:    zapcore.DefaultLineEnding,   // 末尾自动加上\n
+        EncodeLevel:   zapcore.CapitalLevelEncoder, // 大写level
         EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
             enc.AppendString(t.Format(conf.TimeFormat))
         },
@@ -55,7 +55,7 @@ func makeEncoder(conf *LogConfig) zapcore.Encoder {
         EncodeName:     zapcore.FullNameEncoder,
     }
     if conf.IsTerminal {
-        cfg.EncodeLevel = zapcore.LowercaseColorLevelEncoder // 小写彩色level
+        cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder // 大写彩色level
     }
     if conf.JsonEncoder {
         return zapcore.NewJSONEncoder(cfg)
