@@ -29,6 +29,13 @@ type logWrap struct {
 
 var _ Loger = (*logWrap)(nil)
 
+func newLogWrap(log *zap.Logger) *logWrap {
+    l := &logWrap{
+        log: log,
+    }
+    return l
+}
+
 func (m *logWrap) print(level Level, msg string, fields ...zap.Field) {
     if ce := m.log.Check(parserLogLevel(level), msg); ce != nil {
         ce.Write(fields...)

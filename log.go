@@ -28,13 +28,12 @@ func New(conf LogConfig) Loger {
 
     core := zapcore.NewCore(encoder, ws, level)
     opts := makeOpts(&conf)
-    log := zap.New(core, opts...)
-    wrap := &logWrap{log: log}
+    log := newLogWrap(zap.New(core, opts...))
 
     if conf.ShowInitInfo {
-        wrap.Info("zlog 初始化成功")
+        log.Info("zlog 初始化成功")
     }
-    return wrap
+    return log
 }
 
 func makeEncoder(conf *LogConfig) zapcore.Encoder {
