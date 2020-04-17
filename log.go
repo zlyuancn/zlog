@@ -51,7 +51,7 @@ func New(conf LogConfig, opts ...zap.Option) *logWrap {
 
     core := zapcore.NewCore(encoder, ws, level)
     opts = makeOpts(&conf, opts...)
-    log := newLogWrap(zap.New(core, opts...))
+    log := newLogWrap(zap.New(core, opts...).Named(conf.Name))
 
     if conf.ShowInitInfo {
         log.Info("zlog 初始化成功")
@@ -127,7 +127,7 @@ func makeLevel(conf *LogConfig) zapcore.Level {
 func makeOpts(conf *LogConfig, opts ...zap.Option) []zap.Option {
     const callerSkipOffset = 2
 
-    opts = append([]zap.Option{}, opts...)
+    opts = append(([]zap.Option)(nil), opts...)
     if conf.DevelopmentMode {
         opts = append(opts, zap.Development())
     }
