@@ -10,56 +10,43 @@ package zlog
 
 import (
     "fmt"
+    "os"
+    "strings"
+    "time"
+
     "go.uber.org/zap"
     "go.uber.org/zap/zapcore"
     "gopkg.in/natefinch/lumberjack.v2"
-    "os"
-    "time"
 )
 
-func NewLogger(opts ...Option) *zap.Logger {
-    conf := newConfig(opts...)
+var DefaultLogger LogerWrap = defaultLog
 
-    var encoderConfig = makeEncoderConfig(conf) // 编码器配置
-    var ws = makeWriteSyncers(conf)             // 输出合成器
-    var level = parserLogLevel(conf, "info")    // 日志级别
+func New(conf LogConfig) LogerWrap {
+    var encoder = makeEncoder(&conf) // 编码器配置
+    var ws = makeWriteSyncer(&conf)  // 输出合成器
+    var level = makeLevel(&conf)     // 日志级别
 
-    // zap核心
-    core := zapcore.NewCore(
-        zapcore.NewConsoleEncoder(encoderConfig),
-        zapcore.NewMultiWriteSyncer(ws...),
-        level,
-    )
-
-    // 构建zap选项
-    zapopts := []zap.Option{}
-    if conf.DevelopmentMode {
-        zapopts = append(zapopts, zap.Development())
-    }
-    if conf.ShowFileAndLinenum {
-        zapopts = append(zapopts, zap.AddCaller())
-    }
-
-    // 创建zap工具
-    logger := zap.New(core, zapopts...) // 构造日志
+    core := zapcore.NewCore(encoder, ws, level)
+    opts := makeOpts(&conf)
+    log := zap.New(core, opts...)
+    wrap := &logWrap{log: log}
 
     if conf.ShowInitInfo {
-        logger.Info("zlog 初始化成功")
+        wrap.Info("zlog 初始化成功")
     }
-    return logger
+    return wrap
 }
 
-// 构建编码器配置
-func makeEncoderConfig(conf *config) zapcore.EncoderConfig {
-    return zapcore.EncoderConfig{
-        TimeKey:       "time",
+func makeEncoder(conf *LogConfig) zapcore.Encoder {
+    cfg := zapcore.EncoderConfig{
+        MessageKey:    "msg",
         LevelKey:      "level",
+        TimeKey:       "time",
         NameKey:       "logger",
         CallerKey:     "linenum",
-        MessageKey:    "msg",
         StacktraceKey: "stacktrace",
-        LineEnding:    zapcore.DefaultLineEnding,
-        EncodeLevel:   zapcore.LowercaseLevelEncoder, // 小写编码器
+        LineEnding:    zapcore.DefaultLineEnding,     // 末尾自动加上\n
+        EncodeLevel:   zapcore.LowercaseLevelEncoder, // 小写level
         EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
             enc.AppendString(t.Format(conf.TimeFormat))
         },
@@ -67,19 +54,30 @@ func makeEncoderConfig(conf *config) zapcore.EncoderConfig {
         EncodeCaller:   zapcore.FullCallerEncoder, // 全路径编码器
         EncodeName:     zapcore.FullNameEncoder,
     }
+    if conf.IsTerminal {
+        cfg.EncodeLevel = zapcore.LowercaseColorLevelEncoder // 小写彩色level
+    }
+    if conf.JsonEncoder {
+        return zapcore.NewJSONEncoder(cfg)
+    }
+    return zapcore.NewConsoleEncoder(cfg)
 }
 
-// 构建输出合成器
-func makeWriteSyncers(conf *config) []zapcore.WriteSyncer {
-    ws := []zapcore.WriteSyncer{zapcore.AddSync(os.Stdout)}
+func makeWriteSyncer(conf *LogConfig) zapcore.WriteSyncer {
+    var ws []zapcore.WriteSyncer
+    if conf.WriteToStream {
+        ws = append(ws, zapcore.AddSync(os.Stdout))
+    }
+
     if conf.WriteToFile {
         // 创建文件夹
         err := os.MkdirAll(conf.Path, 666)
         if err != nil {
-            panic(err)
+            fmt.Printf("无法创建日志目录: <%s>: %s\n", conf.Path, err)
+            os.Exit(1)
         }
 
-        //构建lumberjack的hook
+        // 构建lumberjack的hook
         name := conf.Name
         if conf.AppendPid {
             name = fmt.Sprintf("%s_%d", name, os.Getpid())
@@ -93,14 +91,34 @@ func makeWriteSyncers(conf *config) []zapcore.WriteSyncer {
         }
         ws = append(ws, zapcore.AddSync(lumberjackHook))
     }
-    return ws
+    return zapcore.NewMultiWriteSyncer(ws...)
 }
 
-// 解析日志等级
-func parserLogLevel(conf *config, defaultLevel string) zapcore.Level {
-    var l = new(zapcore.Level)
-    if err := l.Set(string(conf.Level)); err != nil {
-        _ = l.Set(defaultLevel)
+func makeLevel(conf *LogConfig) zapcore.Level {
+    level := Level(strings.ToLower(conf.Level))
+    return parserLogLevel(level)
+}
+
+func makeOpts(conf *LogConfig) []zap.Option {
+    const callerSkipOffset = 2
+
+    opts := []zap.Option{}
+    if conf.DevelopmentMode {
+        opts = append(opts, zap.Development())
     }
-    return *l
+    if conf.ShowFileAndLinenum {
+        opts = append(opts, zap.AddCaller())
+    }
+
+    opts = append(opts, zap.AddCallerSkip(conf.CallerSkip+callerSkipOffset))
+    return opts
+}
+
+func parserLogLevel(level Level) zapcore.Level {
+    l, ok := levelMapping[level]
+    if ok {
+        return l
+    }
+
+    return zapcore.InfoLevel
 }
