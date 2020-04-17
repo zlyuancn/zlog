@@ -9,25 +9,17 @@
 package zlog
 
 import (
-    "go.uber.org/zap"
-)
+    "fmt"
 
-type Loger interface {
-    Log(level Level, msg string, fields ...zap.Field)
-    Debug(msg string, fields ...zap.Field)
-    Info(msg string, fields ...zap.Field)
-    Warn(msg string, fields ...zap.Field)
-    Error(msg string, fields ...zap.Field)
-    DPanic(msg string, fields ...zap.Field)
-    Panic(msg string, fields ...zap.Field)
-    Fatal(msg string, fields ...zap.Field)
-}
+    "go.uber.org/zap"
+    "go.uber.org/zap/zapcore"
+)
 
 type logWrap struct {
     log *zap.Logger
 }
 
-var _ Loger = (*logWrap)(nil)
+var _ Logfer = (*logWrap)(nil)
 
 func newLogWrap(log *zap.Logger) *logWrap {
     l := &logWrap{
@@ -36,32 +28,81 @@ func newLogWrap(log *zap.Logger) *logWrap {
     return l
 }
 
-func (m *logWrap) print(level Level, msg string, fields ...zap.Field) {
+func (m *logWrap) Core() zapcore.Core {
+    return m.log.Core()
+}
+
+func (m *logWrap) print(level Level, format string, v []interface{}) {
+    msg, fields := makeBody(format, v)
     if ce := m.log.Check(parserLogLevel(level), msg); ce != nil {
         ce.Write(fields...)
     }
 }
-func (m *logWrap) Log(level Level, msg string, fields ...zap.Field) {
-    m.print(level, msg, fields...)
+func (m *logWrap) Log(level Level, v ...interface{}) {
+    m.print(level, "", v)
 }
-func (m *logWrap) Debug(msg string, fields ...zap.Field) {
-    m.print(DebugLevel, msg, fields...)
+func (m *logWrap) Debug(v ...interface{}) {
+    m.print(DebugLevel, "", v)
 }
-func (m *logWrap) Info(msg string, fields ...zap.Field) {
-    m.print(InfoLevel, msg, fields...)
+func (m *logWrap) Info(v ...interface{}) {
+    m.print(InfoLevel, "", v)
 }
-func (m *logWrap) Warn(msg string, fields ...zap.Field) {
-    m.print(WarnLevel, msg, fields...)
+func (m *logWrap) Warn(v ...interface{}) {
+    m.print(WarnLevel, "", v)
 }
-func (m *logWrap) Error(msg string, fields ...zap.Field) {
-    m.print(ErrorLevel, msg, fields...)
+func (m *logWrap) Error(v ...interface{}) {
+    m.print(ErrorLevel, "", v)
 }
-func (m *logWrap) DPanic(msg string, fields ...zap.Field) {
-    m.print(DPanicLevel, msg, fields...)
+func (m *logWrap) DPanic(v ...interface{}) {
+    m.print(DPanicLevel, "", v)
 }
-func (m *logWrap) Panic(msg string, fields ...zap.Field) {
-    m.print(PanicLevel, msg, fields...)
+func (m *logWrap) Panic(v ...interface{}) {
+    m.print(PanicLevel, "", v)
 }
-func (m *logWrap) Fatal(msg string, fields ...zap.Field) {
-    m.print(FatalLevel, msg, fields...)
+func (m *logWrap) Fatal(v ...interface{}) {
+    m.print(FatalLevel, "", v)
+}
+
+func (m *logWrap) Logf(level Level, format string, v ...interface{}) {
+    m.print(level, format, v)
+}
+func (m *logWrap) Debugf(format string, v ...interface{}) {
+    m.print(DebugLevel, format, v)
+}
+func (m *logWrap) Infof(format string, v ...interface{}) {
+    m.print(InfoLevel, format, v)
+}
+func (m *logWrap) Warnf(format string, v ...interface{}) {
+    m.print(WarnLevel, format, v)
+}
+func (m *logWrap) Errorf(format string, v ...interface{}) {
+    m.print(ErrorLevel, format, v)
+}
+func (m *logWrap) DPanicf(format string, v ...interface{}) {
+    m.print(DPanicLevel, format, v)
+}
+func (m *logWrap) Panicf(format string, v ...interface{}) {
+    m.print(PanicLevel, format, v)
+}
+func (m *logWrap) Fatalf(format string, v ...interface{}) {
+    m.print(FatalLevel, format, v)
+}
+
+func makeBody(format string, v []interface{}) (string, []zap.Field) {
+    args := make([]interface{}, 0, len(v))
+    fields := make([]zap.Field, 0)
+    for _, value := range v {
+        switch val := value.(type) {
+        case zap.Field:
+            fields = append(fields, val)
+        case *zap.Field:
+            fields = append(fields, *val)
+        default:
+            args = append(args, value)
+        }
+    }
+    if format != "" {
+        return fmt.Sprintf(format, args...), fields
+    }
+    return fmt.Sprint(args...), fields
 }

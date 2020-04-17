@@ -8,37 +8,58 @@
 
 package zlog
 
-import (
-    "go.uber.org/zap"
-)
-
 var defaultLog = func() *logWrap {
     conf := DefaultConfig
     conf.ShowInitInfo = false
-    return New(conf).(*logWrap)
+    return New(conf)
 }()
 
-func Log(level Level, msg string, fields ...zap.Field) {
-    defaultLog.print(level, msg, fields...)
+func Log(level Level, v ...interface{}) {
+    defaultLog.print(level, "", v)
 }
-func Debug(msg string, fields ...zap.Field) {
-    defaultLog.print(DebugLevel, msg, fields...)
+func Debug(v ...interface{}) {
+    defaultLog.print(DebugLevel, "", v)
 }
-func Info(msg string, fields ...zap.Field) {
-    defaultLog.print(InfoLevel, msg, fields...)
+func Info(v ...interface{}) {
+    defaultLog.print(InfoLevel, "", v)
 }
-func Warn(msg string, fields ...zap.Field) {
-    defaultLog.print(WarnLevel, msg, fields...)
+func Warn(v ...interface{}) {
+    defaultLog.print(WarnLevel, "", v)
 }
-func Error(msg string, fields ...zap.Field) {
-    defaultLog.print(ErrorLevel, msg, fields...)
+func Error(v ...interface{}) {
+    defaultLog.print(ErrorLevel, "", v)
 }
-func DPanic(msg string, fields ...zap.Field) {
-    defaultLog.print(DPanicLevel, msg, fields...)
+func DPanic(v ...interface{}) {
+    defaultLog.print(DPanicLevel, "", v)
 }
-func Panic(msg string, fields ...zap.Field) {
-    defaultLog.print(PanicLevel, msg, fields...)
+func Panic(v ...interface{}) {
+    defaultLog.print(PanicLevel, "", v)
 }
-func Fatal(msg string, fields ...zap.Field) {
-    defaultLog.print(FatalLevel, msg, fields...)
+func Fatal(v ...interface{}) {
+    defaultLog.print(FatalLevel, "", v)
+}
+
+func Logf(level Level, format string, v ...interface{}) {
+    defaultLog.print(level, format, v)
+}
+func Debugf(format string, v ...interface{}) {
+    defaultLog.print(DebugLevel, format, v)
+}
+func Infof(format string, v ...interface{}) {
+    defaultLog.print(InfoLevel, format, v)
+}
+func Warnf(format string, v ...interface{}) {
+    defaultLog.print(WarnLevel, format, v)
+}
+func Errorf(format string, v ...interface{}) {
+    defaultLog.print(ErrorLevel, format, v)
+}
+func DPanicf(format string, v ...interface{}) {
+    defaultLog.print(DPanicLevel, format, v)
+}
+func Panicf(format string, v ...interface{}) {
+    defaultLog.print(PanicLevel, format, v)
+}
+func Fatalf(format string, v ...interface{}) {
+    defaultLog.print(FatalLevel, format, v)
 }

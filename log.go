@@ -19,9 +19,32 @@ import (
     "gopkg.in/natefinch/lumberjack.v2"
 )
 
-var DefaultLogger Loger = defaultLog
+var DefaultLogger Logfer = defaultLog
 
-func New(conf LogConfig, opts ...zap.Option) Loger {
+type Loger interface {
+    Log(level Level, v ...interface{})
+    Debug(v ...interface{})
+    Info(v ...interface{})
+    Warn(v ...interface{})
+    Error(v ...interface{})
+    DPanic(v ...interface{})
+    Panic(v ...interface{})
+    Fatal(v ...interface{})
+}
+
+type Logfer interface {
+    Loger
+    Logf(level Level, format string, v ...interface{})
+    Debugf(format string, v ...interface{})
+    Infof(format string, v ...interface{})
+    Warnf(format string, v ...interface{})
+    Errorf(format string, v ...interface{})
+    DPanicf(format string, v ...interface{})
+    Panicf(format string, v ...interface{})
+    Fatalf(format string, v ...interface{})
+}
+
+func New(conf LogConfig, opts ...zap.Option) *logWrap {
     var encoder = makeEncoder(&conf) // 编码器配置
     var ws = makeWriteSyncer(&conf)  // 输出合成器
     var level = makeLevel(&conf)     // 日志级别
