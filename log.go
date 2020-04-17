@@ -19,9 +19,9 @@ import (
     "gopkg.in/natefinch/lumberjack.v2"
 )
 
-var DefaultLogger LogerWrap = defaultLog
+var DefaultLogger Loger = defaultLog
 
-func New(conf LogConfig) LogerWrap {
+func New(conf LogConfig) Loger {
     var encoder = makeEncoder(&conf) // 编码器配置
     var ws = makeWriteSyncer(&conf)  // 输出合成器
     var level = makeLevel(&conf)     // 日志级别
