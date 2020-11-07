@@ -108,3 +108,12 @@ func (m *logWrap) makeBody(format string, v []interface{}) (string, []zap.Field)
 	}
 	return fmt.Sprint(args...), fields
 }
+
+// 包装添加一些ZapField, 这会创建一个Logfer副本
+func WrapZapFields(l Logfer, fields ...zap.Field) (Logfer, bool) {
+	if a, ok := l.(*logWrap); ok {
+		fields = append(append([]zap.Field{}, a.fields...), fields...)
+		return newLogWrap(a.log, fields...), true
+	}
+	return nil, false
+}
