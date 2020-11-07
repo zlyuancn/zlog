@@ -9,100 +9,102 @@
 package zlog
 
 import (
-    "fmt"
+	"fmt"
 
-    "go.uber.org/zap"
-    "go.uber.org/zap/zapcore"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type logWrap struct {
-    log *zap.Logger
+	log    *zap.Logger
+	fields []zap.Field
 }
 
 var _ Logfer = (*logWrap)(nil)
 
-func newLogWrap(log *zap.Logger) *logWrap {
-    l := &logWrap{
-        log: log,
-    }
-    return l
+func newLogWrap(log *zap.Logger, fields ...zap.Field) *logWrap {
+	l := &logWrap{
+		log:    log,
+		fields: append([]zap.Field{}, fields...),
+	}
+	return l
 }
 
 func (m *logWrap) Core() zapcore.Core {
-    return m.log.Core()
+	return m.log.Core()
 }
 
 func (m *logWrap) print(level Level, format string, v []interface{}) {
-    msg, fields := makeBody(format, v)
-    if ce := m.log.Check(parserLogLevel(level), msg); ce != nil {
-        ce.Write(fields...)
-    }
+	msg, fields := m.makeBody(format, v)
+	if ce := m.log.Check(parserLogLevel(level), msg); ce != nil {
+		ce.Write(fields...)
+	}
 }
 func (m *logWrap) Log(level Level, v ...interface{}) {
-    m.print(level, "", v)
+	m.print(level, "", v)
 }
 func (m *logWrap) Debug(v ...interface{}) {
-    m.print(DebugLevel, "", v)
+	m.print(DebugLevel, "", v)
 }
 func (m *logWrap) Info(v ...interface{}) {
-    m.print(InfoLevel, "", v)
+	m.print(InfoLevel, "", v)
 }
 func (m *logWrap) Warn(v ...interface{}) {
-    m.print(WarnLevel, "", v)
+	m.print(WarnLevel, "", v)
 }
 func (m *logWrap) Error(v ...interface{}) {
-    m.print(ErrorLevel, "", v)
+	m.print(ErrorLevel, "", v)
 }
 func (m *logWrap) DPanic(v ...interface{}) {
-    m.print(DPanicLevel, "", v)
+	m.print(DPanicLevel, "", v)
 }
 func (m *logWrap) Panic(v ...interface{}) {
-    m.print(PanicLevel, "", v)
+	m.print(PanicLevel, "", v)
 }
 func (m *logWrap) Fatal(v ...interface{}) {
-    m.print(FatalLevel, "", v)
+	m.print(FatalLevel, "", v)
 }
 
 func (m *logWrap) Logf(level Level, format string, v ...interface{}) {
-    m.print(level, format, v)
+	m.print(level, format, v)
 }
 func (m *logWrap) Debugf(format string, v ...interface{}) {
-    m.print(DebugLevel, format, v)
+	m.print(DebugLevel, format, v)
 }
 func (m *logWrap) Infof(format string, v ...interface{}) {
-    m.print(InfoLevel, format, v)
+	m.print(InfoLevel, format, v)
 }
 func (m *logWrap) Warnf(format string, v ...interface{}) {
-    m.print(WarnLevel, format, v)
+	m.print(WarnLevel, format, v)
 }
 func (m *logWrap) Errorf(format string, v ...interface{}) {
-    m.print(ErrorLevel, format, v)
+	m.print(ErrorLevel, format, v)
 }
 func (m *logWrap) DPanicf(format string, v ...interface{}) {
-    m.print(DPanicLevel, format, v)
+	m.print(DPanicLevel, format, v)
 }
 func (m *logWrap) Panicf(format string, v ...interface{}) {
-    m.print(PanicLevel, format, v)
+	m.print(PanicLevel, format, v)
 }
 func (m *logWrap) Fatalf(format string, v ...interface{}) {
-    m.print(FatalLevel, format, v)
+	m.print(FatalLevel, format, v)
 }
 
-func makeBody(format string, v []interface{}) (string, []zap.Field) {
-    args := make([]interface{}, 0, len(v))
-    fields := make([]zap.Field, 0)
-    for _, value := range v {
-        switch val := value.(type) {
-        case zap.Field:
-            fields = append(fields, val)
-        case *zap.Field:
-            fields = append(fields, *val)
-        default:
-            args = append(args, value)
-        }
-    }
-    if format != "" {
-        return fmt.Sprintf(format, args...), fields
-    }
-    return fmt.Sprint(args...), fields
+func (m *logWrap) makeBody(format string, v []interface{}) (string, []zap.Field) {
+	args := make([]interface{}, 0, len(v))
+	fields := append([]zap.Field{}, m.fields...)
+	for _, value := range v {
+		switch val := value.(type) {
+		case zap.Field:
+			fields = append(fields, val)
+		case *zap.Field:
+			fields = append(fields, *val)
+		default:
+			args = append(args, value)
+		}
+	}
+	if format != "" {
+		return fmt.Sprintf(format, args...), fields
+	}
+	return fmt.Sprint(args...), fields
 }

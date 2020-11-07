@@ -9,57 +9,57 @@
 package zlog
 
 var defaultLog = func() *logWrap {
-    conf := DefaultConfig
-    conf.ShowInitInfo = false
-    return New(conf)
+	conf := DefaultConfig
+	conf.ShowInitInfo = false
+	return New(conf)
 }()
 
 func Log(level Level, v ...interface{}) {
-    defaultLog.print(level, "", v)
+	defaultLog.print(level, "", v)
 }
 func Debug(v ...interface{}) {
-    defaultLog.print(DebugLevel, "", v)
+	defaultLog.print(DebugLevel, "", v)
 }
 func Info(v ...interface{}) {
-    defaultLog.print(InfoLevel, "", v)
+	defaultLog.print(InfoLevel, "", v)
 }
 func Warn(v ...interface{}) {
-    defaultLog.print(WarnLevel, "", v)
+	defaultLog.print(WarnLevel, "", v)
 }
 func Error(v ...interface{}) {
-    defaultLog.print(ErrorLevel, "", v)
+	defaultLog.print(ErrorLevel, "", v)
 }
 func DPanic(v ...interface{}) {
-    defaultLog.print(DPanicLevel, "", v)
+	defaultLog.print(DPanicLevel, "", v)
 }
 func Panic(v ...interface{}) {
-    defaultLog.print(PanicLevel, "", v)
+	defaultLog.print(PanicLevel, "", v)
 }
 func Fatal(v ...interface{}) {
-    defaultLog.print(FatalLevel, "", v)
+	defaultLog.print(FatalLevel, "", v)
 }
 
 func Logf(level Level, format string, v ...interface{}) {
-    defaultLog.print(level, format, v)
+	defaultLog.print(level, format, v)
 }
 func Debugf(format string, v ...interface{}) {
-    defaultLog.print(DebugLevel, format, v)
+	defaultLog.print(DebugLevel, format, v)
 }
 func Infof(format string, v ...interface{}) {
-    defaultLog.print(InfoLevel, format, v)
+	defaultLog.print(InfoLevel, format, v)
 }
 func Warnf(format string, v ...interface{}) {
-    defaultLog.print(WarnLevel, format, v)
+	defaultLog.print(WarnLevel, format, v)
 }
 func Errorf(format string, v ...interface{}) {
-    defaultLog.print(ErrorLevel, format, v)
+	defaultLog.print(ErrorLevel, format, v)
 }
 func DPanicf(format string, v ...interface{}) {
-    defaultLog.print(DPanicLevel, format, v)
+	defaultLog.print(DPanicLevel, format, v)
 }
 func Panicf(format string, v ...interface{}) {
-    defaultLog.print(PanicLevel, format, v)
+	defaultLog.print(PanicLevel, format, v)
 }
 func Fatalf(format string, v ...interface{}) {
-    defaultLog.print(FatalLevel, format, v)
+	defaultLog.print(FatalLevel, format, v)
 }
