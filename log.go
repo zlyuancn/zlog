@@ -9,7 +9,6 @@
 package zlog
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -149,9 +148,10 @@ func parserLogLevel(level Level) zapcore.Level {
 	return zapcore.InfoLevel
 }
 
-func GetRawZapLogger(l Logfer) (*zap.Logger, error) {
+// 获取原始ZapLogger
+func GetRawZapLogger(l Logfer) (*zap.Logger, bool) {
 	if a, ok := l.(*logWrap); ok {
-		return a.log, nil
+		return a.log, true
 	}
-	return nil, errors.New("无法转换为*zap.Logger")
+	return nil, false
 }
