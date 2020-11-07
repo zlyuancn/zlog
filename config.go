@@ -51,7 +51,7 @@ type LogConfig struct {
 	DevelopmentMode    bool   // 开发者模式, 在开发者模式下日志记录器在写完消息后程序会感到恐慌
 	ShowFileAndLinenum bool   // 显示文件路径和行号
 	CallerSkip         int    // 程序跳转次数
-	MillisDuration     bool   // 对Duration转为毫秒
+	MillisDuration     bool   // 对zap.Duration转为毫秒
 }
 
 var DefaultConfig = LogConfig{
