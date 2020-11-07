@@ -51,7 +51,7 @@ func New(conf LogConfig, opts ...zap.Option) *logWrap {
 
 	core := zapcore.NewCore(encoder, ws, level)
 	opts = makeOpts(&conf, opts...)
-	log := newLogWrap(zap.New(core, opts...).Named(conf.Name))
+	log := newLogWrap(zap.New(core, opts...).Named(conf.Name), parserLogLevel(Level(conf.ShowFileAndLinenumMinLevel)))
 
 	if conf.ShowInitInfo {
 		log.Info("zlog 初始化成功")

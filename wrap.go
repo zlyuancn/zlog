@@ -16,16 +16,18 @@ import (
 )
 
 type logWrap struct {
-	log    *zap.Logger
-	fields []zap.Field
+	log            *zap.Logger
+	fields         []zap.Field
+	callerMinLevel zapcore.Level
 }
 
 var _ Logfer = (*logWrap)(nil)
 
-func newLogWrap(log *zap.Logger, fields ...zap.Field) *logWrap {
+func newLogWrap(log *zap.Logger, callerMinLevel zapcore.Level, fields ...zap.Field) *logWrap {
 	l := &logWrap{
-		log:    log,
-		fields: append([]zap.Field{}, fields...),
+		log:            log,
+		fields:         append([]zap.Field{}, fields...),
+		callerMinLevel: callerMinLevel,
 	}
 	return l
 }
@@ -36,7 +38,11 @@ func (m *logWrap) Core() zapcore.Core {
 
 func (m *logWrap) print(level Level, format string, v []interface{}) {
 	msg, fields := m.makeBody(format, v)
-	if ce := m.log.Check(parserLogLevel(level), msg); ce != nil {
+	zapLevel := parserLogLevel(level)
+	if ce := m.log.Check(zapLevel, msg); ce != nil {
+		if zapLevel < m.callerMinLevel {
+			ce.Caller.Defined = false
+		}
 		ce.Write(fields...)
 	}
 }
@@ -113,7 +119,7 @@ func (m *logWrap) makeBody(format string, v []interface{}) (string, []zap.Field)
 func WrapZapFields(l Logfer, fields ...zap.Field) (Logfer, bool) {
 	if a, ok := l.(*logWrap); ok {
 		fields = append(append([]zap.Field{}, a.fields...), fields...)
-		return newLogWrap(a.log, fields...), true
+		return newLogWrap(a.log, a.callerMinLevel, fields...), true
 	}
 	return nil, false
 }
