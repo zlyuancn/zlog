@@ -53,6 +53,7 @@ IsTerminal         bool   // 是否为控制台模式(控制台会打印彩色�
 ShowInitInfo       bool   // 显示初始化信息
 DevelopmentMode    bool   // 开发者模式, 在开发者模式下日志记录器在写完消息后程序会感到恐慌
 ShowFileAndLinenum bool   // 显示文件路径和行号
+ShowFileAndLinenumMinLevel bool // 最小显示文件路径和行号的等级
 CallerSkip         int    // 程序跳转次数
 MillisDuration     bool   // 对Duration转为毫秒
 ```
