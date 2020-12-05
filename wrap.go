@@ -123,3 +123,12 @@ func WrapZapFields(l Logfer, fields ...zap.Field) (Logfer, bool) {
 	}
 	return nil, false
 }
+
+// 包装添加一些ZapField, 这会创建一个Loger副本
+func WrapZapFieldsWithLoger(l Loger, fields ...zap.Field) (Loger, bool) {
+	if a, ok := l.(*logWrap); ok {
+		fields = append(append([]zap.Field{}, a.fields...), fields...)
+		return newLogWrap(a.log, a.callerMinLevel, fields...), true
+	}
+	return nil, false
+}
