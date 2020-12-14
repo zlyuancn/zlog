@@ -49,9 +49,9 @@ type LogConfig struct {
 	JsonEncoder                bool   // 启用json编码器, 输出的每一行日志转为json格式
 	WriteToStream              bool   // 输出到屏幕
 	WriteToFile                bool   // 日志是否输出到文件
-	Name                       string // 日志文件名, 末尾会自动附加 .log 后缀
+	Name                       string // 日志文件名, 末尾会自动附加 .log 后缀, 支持zstr简单模板语法, 渲染数据从Meta获取
 	AppendPid                  bool   // 是否在日志文件名后附加进程号
-	Path                       string // 默认日志存放路径
+	Path                       string // 默认日志存放路径, 支持zstr简单模板语法, 渲染数据从Meta获取
 	FileMaxSize                int    // 每个日志最大尺寸,单位M
 	FileMaxBackupsNum          int    // 日志文件最多保存多少个备份
 	FileMaxDurableTime         int    // 文件最多保存多长时间,单位天
@@ -63,6 +63,16 @@ type LogConfig struct {
 	ShowFileAndLinenumMinLevel string // 最小显示文件路径和行号的等级
 	CallerSkip                 int    // 程序跳转次数
 	MillisDuration             bool   // 对zap.Duration转为毫秒
+	// 元数据
+	//
+	// 元数据默认包含以下配置, 可以覆盖设置
+	// name:        配置的name名
+	// pid:         进程id
+	// date:        日期; 如 2006-01-02
+	// time:        时间; 如 15:04:05
+	// date_time:   如 2006-01-02 15:04:05
+	// host_name:   主机名
+	Meta map[string]interface{}
 }
 
 var DefaultConfig = LogConfig{
@@ -84,4 +94,5 @@ var DefaultConfig = LogConfig{
 	ShowFileAndLinenumMinLevel: "debug",
 	CallerSkip:                 0,
 	MillisDuration:             true,
+	Meta:                       make(map[string]interface{}),
 }

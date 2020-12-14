@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/zlyuancn/zstr"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -45,6 +46,9 @@ type Logfer interface {
 }
 
 func New(conf LogConfig, opts ...zap.Option) *logWrap {
+	conf.Name = zstr.Render(conf.Name, makeTemplateData(DefaultConfig.Name, conf.Meta))
+	conf.Path = zstr.Render(conf.Path, makeTemplateData(conf.Name, conf.Meta))
+
 	var encoder = makeEncoder(&conf) // 编码器配置
 	var ws = makeWriteSyncer(&conf)  // 输出合成器
 	var level = makeLevel(&conf)     // 日志级别
@@ -57,6 +61,25 @@ func New(conf LogConfig, opts ...zap.Option) *logWrap {
 		log.Info("zlog 初始化成功")
 	}
 	return log
+}
+
+// 构建用于zstr简单模板的数据
+func makeTemplateData(name string, meta map[string]interface{}) map[string]interface{} {
+	now := time.Now()
+	hostName, _ := os.Hostname()
+	out := map[string]interface{}{
+		"name":      name,
+		"pid":       os.Getpid(),
+		"date":      now.Format("2006-01-02"),
+		"time":      now.Format("15:04:05"),
+		"date_time": now.Format("2006-01-02 15:04:05"),
+		"host_name": hostName,
+	}
+
+	for k, v := range meta {
+		out[k] = v
+	}
+	return out
 }
 
 func makeEncoder(conf *LogConfig) zapcore.Encoder {
