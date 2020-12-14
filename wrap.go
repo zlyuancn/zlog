@@ -19,15 +19,17 @@ type logWrap struct {
 	log            *zap.Logger
 	fields         []zap.Field
 	callerMinLevel zapcore.Level
+	ws             zapcore.WriteSyncer
 }
 
 var _ Logfer = (*logWrap)(nil)
 
-func newLogWrap(log *zap.Logger, callerMinLevel zapcore.Level, fields ...zap.Field) *logWrap {
+func newLogWrap(log *zap.Logger, callerMinLevel zapcore.Level, fields []zap.Field, ws zapcore.WriteSyncer) *logWrap {
 	l := &logWrap{
 		log:            log,
 		fields:         append([]zap.Field{}, fields...),
 		callerMinLevel: callerMinLevel,
+		ws:             ws,
 	}
 	return l
 }
@@ -135,6 +137,14 @@ func WrapZapFields(l Logfer, fields ...zap.Field) (Logfer, bool) {
 func WrapZapFieldsWithLoger(l Loger, fields ...zap.Field) (Loger, bool) {
 	if a, ok := l.(*logWrap); ok {
 		return a.Copy(fields...), true
+	}
+	return nil, false
+}
+
+// 获取日志输出合成器
+func GetLogWriteSyncer(l interface{}) (zapcore.WriteSyncer, bool) {
+	if a, ok := l.(*logWrap); ok {
+		return a.ws, true
 	}
 	return nil, false
 }
