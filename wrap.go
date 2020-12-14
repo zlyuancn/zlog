@@ -32,6 +32,14 @@ func newLogWrap(log *zap.Logger, callerMinLevel zapcore.Level, fields ...zap.Fie
 	return l
 }
 
+func (m *logWrap) Copy(fields ...zap.Field) *logWrap {
+	return &logWrap{
+		log:            m.log,
+		fields:         append(append([]zap.Field{}, m.fields...), fields...),
+		callerMinLevel: m.callerMinLevel,
+	}
+}
+
 func (m *logWrap) Core() zapcore.Core {
 	return m.log.Core()
 }
@@ -118,8 +126,7 @@ func (m *logWrap) makeBody(format string, v []interface{}) (string, []zap.Field)
 // 包装添加一些ZapField, 这会创建一个Logfer副本
 func WrapZapFields(l Logfer, fields ...zap.Field) (Logfer, bool) {
 	if a, ok := l.(*logWrap); ok {
-		fields = append(append([]zap.Field{}, a.fields...), fields...)
-		return newLogWrap(a.log, a.callerMinLevel, fields...), true
+		return a.Copy(fields...), true
 	}
 	return nil, false
 }
@@ -127,8 +134,7 @@ func WrapZapFields(l Logfer, fields ...zap.Field) (Logfer, bool) {
 // 包装添加一些ZapField, 这会创建一个Loger副本
 func WrapZapFieldsWithLoger(l Loger, fields ...zap.Field) (Loger, bool) {
 	if a, ok := l.(*logWrap); ok {
-		fields = append(append([]zap.Field{}, a.fields...), fields...)
-		return newLogWrap(a.log, a.callerMinLevel, fields...), true
+		return a.Copy(fields...), true
 	}
 	return nil, false
 }
