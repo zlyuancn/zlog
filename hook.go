@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type interceptorFunc func(ent zapcore.Entry, fields []zapcore.Field) (cancel bool)
+type interceptorFunc func(ent *zapcore.Entry, fields []zapcore.Field) (cancel bool)
 
 type interceptor struct {
 	zapcore.Core
@@ -43,7 +43,7 @@ func (h *interceptor) With(fields []zapcore.Field) zapcore.Core {
 }
 func (c *interceptor) Write(ent zapcore.Entry, fields []zapcore.Field) error {
 	for i := range c.funcs {
-		if c.funcs[i](ent, fields) {
+		if c.funcs[i](&ent, fields) {
 			return nil
 		}
 	}
