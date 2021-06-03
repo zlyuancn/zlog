@@ -99,13 +99,21 @@ func makeEncoder(conf *LogConfig) zapcore.Encoder {
 		EncodeCaller:   zapcore.FullCallerEncoder, // 全路径编码器
 		EncodeName:     zapcore.FullNameEncoder,
 	}
-	if conf.IsTerminal {
-		cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder // 大写彩色level
+	if !conf.Json && conf.Color {
+		if conf.CapitalLevel {
+			cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder // 大写彩色level
+		} else {
+			cfg.EncodeLevel = zapcore.LowercaseColorLevelEncoder // 小写彩色level
+		}
+	} else if conf.CapitalLevel {
+		cfg.EncodeLevel = zapcore.CapitalLevelEncoder
+	} else {
+		cfg.EncodeLevel = zapcore.LowercaseLevelEncoder
 	}
 	if conf.MillisDuration {
 		cfg.EncodeDuration = zapcore.MillisDurationEncoder
 	}
-	if conf.JsonEncoder {
+	if conf.Json {
 		return zapcore.NewJSONEncoder(cfg)
 	}
 	return zapcore.NewConsoleEncoder(cfg)
